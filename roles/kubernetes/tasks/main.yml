@@ -54,7 +54,7 @@
     owner: ansible
     group: ansible
     mode: 0400
-   when: conf.stat.exists and ansible_hostname == "kmaster"
+   when: conf.stat.exists == "true" and ansible_hostname == "kmaster"
  - name: Install Wavenet
    become: no
    command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
