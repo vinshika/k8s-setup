@@ -51,9 +51,10 @@
    copy:
     src: /etc/kubernetes/admin.conf
     dest: $HOME/.kube/config
+    remote_src: yes
     owner: ansible
     group: ansible
-    mode: 0400
+    mode: 0600
    when: conf.stat.exists == "true" and ansible_hostname == "kmaster"
  - name: Install Wavenet
    become: no
