@@ -1,0 +1,65 @@
+---
+ - name: Remove swapfile from /etc/fstab
+   mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+   with_items:
+    - swap
+    - none
+   become: yes
+ - name: Swap Off
+   command: swapoff -a
+   when: ansible_swaptotal_mb > 0
+   become: yes
+ - name: Add an apt signing key for Kubernetes
+   apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+   become: yes
+ - name: Add repostory for K8S
+   apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes.list
+   become: yes
+ - name: Install K8S packages
+   apt:
+    name: "{{ item }}"
+    state: latest
+   with_items:
+    - kubeadm
+    - kubelet
+    - kubectl
+ - name: Initialize Kubeadm command
+   command: kubeadm init --apiserver-advertise-address= "{{ ansible_default_ipv4.address }}" --pod-network-cidr=10.244.0.0/16
+   when: ansible_hostname == "kmaster"
+   become: yes
+ - name: Create kube folder
+   become: no
+   file:
+    path: $HOME/.kube
+    state: directory
+    mode: 0775
+   when: ansible_hostname == "kmaster"
+ - name: Check the admin.conf file exists
+   stat:
+    path: /etc/kubernetes/admin.conf
+   register: conf
+   when: ansible_hostname == "kmaster"
+ - name: Copy the conf file to Home Directory
+   copy:
+    src: /etc/kubernetes/admin.conf
+    dest: $HOME/.kube/config
+    owner: ansible
+    group: ansible
+    mode: 0400
+   when: conf.stat.exists and ansible_hostname == "kmaster"
+ - name: Install Wavenet
+   become: no
+   command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+   when: ansible_hostname == "kmaster"
+ - name: Generate join command
+   command: kubeadm token create --print-join-command
+   register: join
+   when: ansible_hostname == "kmaster"
