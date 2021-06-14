@@ -1,0 +1,6 @@
+---
+- name: Docker and Kubernetes setup
+  hosts: all
+  roles:
+   - docker
+   - kubernetes
