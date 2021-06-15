@@ -36,6 +36,7 @@
     - kubeadm
     - kubelet
     - kubectl
+   become: yes
  - name: Initialize Kubeadm command
    shell: kubeadm init --pod-network-cidr=10.244.0.0/16
    when: ansible_hostname == "k8master"
