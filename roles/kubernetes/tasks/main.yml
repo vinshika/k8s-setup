@@ -1,4 +1,9 @@
 ---
+ - name: Check the user details
+   command: whoami
+   register: user_details
+ - name: Print the details
+   debug: var=user_details
  - name: Remove swapfile from /etc/fstab
    mount:
     name: "{{ item }}"
@@ -50,11 +55,12 @@
  - name: Copy the conf file to Home Directory
    copy:
     src: /etc/kubernetes/admin.conf
-    dest: $HOME/.kube/config
+    dest: /home/{{ ansible_user_id }}/.kube/config
     remote_src: yes
     owner: ansible
     group: ansible
     mode: 0600
+   become: yes
    when: conf.stat.exists == "true" and ansible_hostname == "kmaster"
  - name: Install Wavenet
    become: no
@@ -64,3 +70,20 @@
    command: kubeadm token create --print-join-command
    register: join
    when: ansible_hostname == "kmaster"
+ - name: Redirect the Join key to script file
+   copy:
+    context: "{{ join..stdout_lines[0] }}"
+    dest: /home/{{ ansible_user_id }}/join_command.sh
+    mode: 0755
+    owner: ansible
+    group: ansible
+   when: ansible_hostname == "kmaster"
+ - name: Copy the script to Worker Node 1
+   command: scp /home/{{ ansible_user_id }}/join_command.sh ansible@10.142.0.19:/home/{{ ansible_user_id }}/join_command.sh
+   when: ansible_hostname == "kmaster"
+ - name: Copy the script to Worker Node 2
+   command: scp /home/{{ ansible_user_id }}/join_command.sh ansible@10.142.0.20:/home/{{ ansible_user_id }}/join_command.sh
+   when: ansible_hostname == "kmaster"
+ - name: Run the script
+   command: sh /home/{{ ansible_user_id }}/join_command.sh
+   when: ansible_hostname == "kworker1" or ansible_hostname == "kworker2"
