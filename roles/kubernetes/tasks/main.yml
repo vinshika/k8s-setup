@@ -55,7 +55,7 @@
  - name: Copy the conf file to Home Directory
    copy:
     src: /etc/kubernetes/admin.conf
-    dest: /home/{{ ansible_user_id }}/.kube/config
+    dest: /home/ansible/.kube/config
     remote_src: yes
     owner: ansible
     group: ansible
