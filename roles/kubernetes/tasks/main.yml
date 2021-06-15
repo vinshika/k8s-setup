@@ -78,10 +78,3 @@
     owner: ansible
     group: ansible
    when: ansible_hostname == "k8master"
- - name: Copy the script to Worker Node 1
-   command: scp /home/{{ ansible_user_id }}/join_command.sh ansible@10.142.0.19:/home/{{ ansible_user_id }}/join_command.sh
- - name: Copy the script to Worker Node 2
-   command: scp /home/{{ ansible_user_id }}/join_command.sh ansible@10.142.0.20:/home/{{ ansible_user_id }}/join_command.sh
- - name: Run the script
-   command: sh /home/{{ ansible_user_id }}/join_command.sh
-   when: ansible_hostname == "k8worker1" or ansible_hostname == "k8worker2"
