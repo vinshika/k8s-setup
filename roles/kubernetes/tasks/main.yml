@@ -38,7 +38,7 @@
     - kubectl
  - name: Initialize Kubeadm command
    shell: kubeadm init --pod-network-cidr=10.244.0.0/16
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
    become: yes
  - name: Create kube folder
    become: no
@@ -46,30 +46,30 @@
     path: $HOME/.kube
     state: directory
     mode: 0775
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
  - name: Check the admin.conf file exists
    stat:
     path: /etc/kubernetes/admin.conf
    register: conf
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
  - name: Copy the conf file to Home Directory
    copy:
     src: /etc/kubernetes/admin.conf
-    dest: /home/ansible/.kube/config
+    dest: /home/{{ ansible_user_id }}/.kube/config
     remote_src: yes
     owner: ansible
     group: ansible
     mode: 0600
    become: yes
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
  - name: Install Wavenet
    become: no
    command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
  - name: Generate join command
    command: kubeadm token create --print-join-command
    register: join
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
  - name: Redirect the Join key to script file
    copy:
     context: "{{ join..stdout_lines[0] }}"
@@ -77,11 +77,11 @@
     mode: 0755
     owner: ansible
     group: ansible
-   when: ansible_hostname == "kmaster"
+   when: ansible_hostname == "k8master"
  - name: Copy the script to Worker Node 1
    command: scp /home/{{ ansible_user_id }}/join_command.sh ansible@10.142.0.19:/home/{{ ansible_user_id }}/join_command.sh
  - name: Copy the script to Worker Node 2
    command: scp /home/{{ ansible_user_id }}/join_command.sh ansible@10.142.0.20:/home/{{ ansible_user_id }}/join_command.sh
  - name: Run the script
    command: sh /home/{{ ansible_user_id }}/join_command.sh
-   when: ansible_hostname == "kworker1" or ansible_hostname == "kworker2"
+   when: ansible_hostname == "k8worker1" or ansible_hostname == "k8worker2"
