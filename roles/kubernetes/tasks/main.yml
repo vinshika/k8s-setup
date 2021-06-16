@@ -29,6 +29,7 @@
     filename: kubernetes.list
    become: yes
  - name: Install K8S packages
+   become: yes
    apt:
     name: "{{ item }}"
     state: latest
@@ -36,7 +37,6 @@
     - kubeadm
     - kubelet
     - kubectl
-   become: yes
  - name: Initialize Kubeadm command
    shell: kubeadm init --pod-network-cidr=10.244.0.0/16
    when: ansible_hostname == "k8master"
@@ -79,3 +79,20 @@
     owner: ansible
     group: ansible
    when: ansible_hostname == "k8master"
+ - name: Fetch the Join command from Master to Local Machine
+   run_once: yes
+   fetch:
+    src: /home/{{ ansible_user_id }}/join_command.sh
+    dest: /home/{{ ansible_user_id }}/join_command.sh
+    flat: yes
+   when: ansible_hostname == "k8master"
+ - name: Copy the Join file
+   copy:
+    src: /home/{{ ansible_user_id }}/join_command.sh
+    dest: /tmp
+    mode: 0755
+   when: ansible_hostname == "k8worker1" or ansible_hostname == "k8worker2"
+ - name: Execute the Join command
+   command: sh /tmp/join_command.sh
+   when: ansible_hostname == "k8worker1" or ansible_hostname == "k8worker2"
+   become: yes
