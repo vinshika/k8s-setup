@@ -65,7 +65,7 @@
    when: ansible_hostname == "k8master"
  - name: Install Wavenet
    become: no
-   command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+   shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
    when: ansible_hostname == "k8master"
  - name: Generate join command
    command: kubeadm token create --print-join-command
