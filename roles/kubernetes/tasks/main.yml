@@ -73,12 +73,13 @@
    when: ansible_hostname == "vmaster"
  - name: Redirect the Join key to script file
    copy:
-    context: "{{ join.stdout_lines[0] }}"
+    content: "{{ join.stdout_lines[0] }}"
     dest: /home/{{ ansible_user_id }}/join_command.sh
     mode: 0755
     owner: ansible
     group: ansible
    when: ansible_hostname == "vmaster"
+   become: yes
  - name: Fetch the Join command from Master to Local Machine
    run_once: yes
    fetch:
