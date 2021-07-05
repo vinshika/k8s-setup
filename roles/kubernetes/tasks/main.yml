@@ -75,7 +75,7 @@
    copy:
     content: "{{ join.stdout_lines[0] }}"
     dest: /home/{{ ansible_user_id }}/join_command.sh
-    mode: 0755
+    mode: 0777
     owner: ansible
     group: ansible
    when: ansible_hostname == "vmaster"
