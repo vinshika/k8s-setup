@@ -87,6 +87,7 @@
     dest: /home/{{ ansible_user_id }}/join_command.sh
     flat: yes
    when: ansible_hostname == "vmaster"
+   become: yes
  - name: Copy the Join file
    copy:
     src: /home/{{ ansible_user_id }}/join_command.sh
