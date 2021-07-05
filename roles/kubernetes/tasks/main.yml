@@ -92,7 +92,7 @@
    copy:
     src: /home/{{ ansible_user_id }}/join_command.sh
     dest: /tmp
-    mode: 0755
+    mode: 0777
    when: ansible_hostname == "vworker1" or ansible_hostname == "vworker2"
  - name: Execute the Join command
    command: sh /tmp/join_command.sh
